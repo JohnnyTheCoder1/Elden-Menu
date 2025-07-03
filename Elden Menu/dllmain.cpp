@@ -124,7 +124,7 @@ std::vector<uint16_t> centerCamera = { 0x66 ,0x0f ,0x7f ,0x07 ,0xf3 ,0x0f ,0x10 
 uintptr_t centerCameraAddr = SigScan(centerCamera);
 
 // to store the 4 op codes relatives to the corresponding address
-int* CHR_DBG_4bytesAddr = (int*)(CHR_DBG_FLAGSAddr + (byte)0x2);
+int* CHR_DBG_4bytesAddr = (CHR_DBG_FLAGSAddr != 0) ? (int*)(CHR_DBG_FLAGSAddr + (byte)0x2) : nullptr;
 int* WorldChrMan_4bytesAddr = (int*)(WorldChrManAddr + (byte)0x3);
 int* GameDataMan_4bytesAddr = (int*)(GameDataManAddr + (byte)0x3);
 int* EventFlagMan_4bytesAddr = (int*)(EventFlagManAddr + (byte)0x3);
@@ -132,7 +132,7 @@ int* showGraces_4bytesAddr = (int*)(showGracesAddr + (byte)0x3);
 int* FPS_4bytesAddr = (int*)(fpsAddr + (byte)0x3);
 int* NetManImp_4bytesAddr = (int*)(NetManImpAddr + (byte)0x3);
 // to read and store the 4 op codes as an address
-uintptr_t CHR_DBG_FLAGSReal = readAddress(CHR_DBG_FLAGSAddr, *CHR_DBG_4bytesAddr, 7);
+uintptr_t CHR_DBG_FLAGSReal = (CHR_DBG_FLAGSAddr != 0 && CHR_DBG_4bytesAddr != nullptr) ? readAddress(CHR_DBG_FLAGSAddr, *CHR_DBG_4bytesAddr, 7) : 0;
 uintptr_t* WorldChrManReal = (uintptr_t*)readAddress(WorldChrManAddr, *WorldChrMan_4bytesAddr, 7);
 uintptr_t WorldChrManRealReal{ 0 };
 uintptr_t* GameDataManReal = (uintptr_t*)readAddress(GameDataManAddr, *GameDataMan_4bytesAddr, 7);
@@ -602,14 +602,21 @@ HRESULT APIENTRY MJPresent(IDXGISwapChain3* pSwapChain, UINT SyncInterval, UINT 
 			
 			if (ImGui::Button(ICON_FA_HEART "  GOD MODE", ImVec2(ImGui::GetContentRegionAvail().x-1, NULL)))
 			{
-				isGodMode = !isGodMode;
+				// Safety check: Only proceed if CHR_DBG_FLAGSReal is valid
+				if (CHR_DBG_FLAGSReal != 0) {
+					isGodMode = !isGodMode;
 
-				static byte* godMode = (byte*)CHR_DBG_FLAGSReal;
-				if (isGodMode) {
-					*godMode = 0x1;
+					static byte* godMode = (byte*)CHR_DBG_FLAGSReal;
+					if (isGodMode) {
+						*godMode = 0x1;
+					}
+					else {
+						*godMode = 0x0;
+					}
 				}
 				else {
-					*godMode = 0x0;
+					// Reset the toggle state if the memory address is invalid
+					isGodMode = false;
 				}
 			}
 			ImGui::SameLine(); HelpMarker("Player can't die, HP bar will go down visually");
@@ -627,14 +634,21 @@ HRESULT APIENTRY MJPresent(IDXGISwapChain3* pSwapChain, UINT SyncInterval, UINT 
 
 			if (ImGui::Button(ICON_FA_HAND_FIST"  INF STAMINA", ImVec2(ImGui::GetContentRegionAvail().x-1, NULL)))
 			{
-				isInfStamina = !isInfStamina;
+				// Safety check: Only proceed if CHR_DBG_FLAGSReal is valid
+				if (CHR_DBG_FLAGSReal != 0) {
+					isInfStamina = !isInfStamina;
 
-				static byte* infStamina = (byte*)(CHR_DBG_FLAGSReal+(byte)0x4);
-				if (isInfStamina) {
-					*infStamina = 0x1;
+					static byte* infStamina = (byte*)(CHR_DBG_FLAGSReal+(byte)0x4);
+					if (isInfStamina) {
+						*infStamina = 0x1;
+					}
+					else {
+						*infStamina = 0x0;
+					}
 				}
 				else {
-					*infStamina = 0x0;
+					// Reset the toggle state if the memory address is invalid
+					isInfStamina = false;
 				}
 			}
 			ImGui::SameLine(); HelpMarker("Unlimited stamina points");
@@ -652,14 +666,21 @@ HRESULT APIENTRY MJPresent(IDXGISwapChain3* pSwapChain, UINT SyncInterval, UINT 
 			
 			if (ImGui::Button(ICON_FA_WAND_MAGIC_SPARKLES "  INFINITE MAGIC", ImVec2(ImGui::GetContentRegionAvail().x-1, NULL)))
 			{
-				isInfMagic = !isInfMagic;
+				// Safety check: Only proceed if CHR_DBG_FLAGSReal is valid
+				if (CHR_DBG_FLAGSReal != 0) {
+					isInfMagic = !isInfMagic;
 
-				static byte* infMagic = (byte*)(CHR_DBG_FLAGSReal + (byte)0x5);
-				if (isInfMagic) {
-					*infMagic = 0x1;
+					static byte* infMagic = (byte*)(CHR_DBG_FLAGSReal + (byte)0x5);
+					if (isInfMagic) {
+						*infMagic = 0x1;
+					}
+					else {
+						*infMagic = 0x0;
+					}
 				}
 				else {
-					*infMagic = 0x0;
+					// Reset the toggle state if the memory address is invalid
+					isInfMagic = false;
 				}
 			}
 			ImGui::SameLine(); HelpMarker("No magic points consume");
@@ -1303,14 +1324,21 @@ HRESULT APIENTRY MJPresent(IDXGISwapChain3* pSwapChain, UINT SyncInterval, UINT 
 
 			if (ImGui::Button(ICON_FA_ARROWS_DOWN_TO_LINE "  UNLIMITED ARROWS", ImVec2(ImGui::GetContentRegionAvail().x-1, NULL)))
 			{
-				isUnlimitedArrow = !isUnlimitedArrow;
+				// Safety check: Only proceed if CHR_DBG_FLAGSReal is valid
+				if (CHR_DBG_FLAGSReal != 0) {
+					isUnlimitedArrow = !isUnlimitedArrow;
 
-				static byte* unlimitedArrow = (byte*)(CHR_DBG_FLAGSReal + (byte)0x6);
-				if (isUnlimitedArrow) {
-					*unlimitedArrow = 0x1;
+					static byte* unlimitedArrow = (byte*)(CHR_DBG_FLAGSReal + (byte)0x6);
+					if (isUnlimitedArrow) {
+						*unlimitedArrow = 0x1;
+					}
+					else {
+						*unlimitedArrow = 0x0;
+					}
 				}
 				else {
-					*unlimitedArrow = 0x0;
+					// Reset the toggle state if the memory address is invalid
+					isUnlimitedArrow = false;
 				}
 			}
 
@@ -1327,14 +1355,21 @@ HRESULT APIENTRY MJPresent(IDXGISwapChain3* pSwapChain, UINT SyncInterval, UINT 
 
 			if (ImGui::Button(ICON_FA_BOWL_FOOD "  UNLIMITED CONSUMABLES", ImVec2(ImGui::GetContentRegionAvail().x-1, NULL)))
 			{
-				isUnlimitedConsumables = !isUnlimitedConsumables;
+				// Safety check: Only proceed if CHR_DBG_FLAGSReal is valid
+				if (CHR_DBG_FLAGSReal != 0) {
+					isUnlimitedConsumables = !isUnlimitedConsumables;
 
-				static byte* unlimitedConsumables = (byte*)(CHR_DBG_FLAGSReal + (byte)0x3);
-				if (isUnlimitedConsumables) {
-					*unlimitedConsumables = 0x1;
+					static byte* unlimitedConsumables = (byte*)(CHR_DBG_FLAGSReal + (byte)0x3);
+					if (isUnlimitedConsumables) {
+						*unlimitedConsumables = 0x1;
+					}
+					else {
+						*unlimitedConsumables = 0x0;
+					}
 				}
 				else {
-					*unlimitedConsumables = 0x0;
+					// Reset the toggle state if the memory address is invalid
+					isUnlimitedConsumables = false;
 				}
 			}
 
@@ -1351,14 +1386,21 @@ HRESULT APIENTRY MJPresent(IDXGISwapChain3* pSwapChain, UINT SyncInterval, UINT 
 
 			if (ImGui::Button(ICON_FA_SKULL "  ONE HIT KILL", ImVec2(ImGui::GetContentRegionAvail().x-1, NULL)))
 			{
-				isOneHitKill = !isOneHitKill;
+				// Safety check: Only proceed if CHR_DBG_FLAGSReal is valid
+				if (CHR_DBG_FLAGSReal != 0) {
+					isOneHitKill = !isOneHitKill;
 
-				static byte* oneHitKill = (byte*)(CHR_DBG_FLAGSReal + (byte)0x2);
-				if (isOneHitKill) {
-					*oneHitKill = 0x1;
+					static byte* oneHitKill = (byte*)(CHR_DBG_FLAGSReal + (byte)0x2);
+					if (isOneHitKill) {
+						*oneHitKill = 0x1;
+					}
+					else {
+						*oneHitKill = 0x0;
+					}
 				}
 				else {
-					*oneHitKill = 0x0;
+					// Reset the toggle state if the memory address is invalid
+					isOneHitKill = false;
 				}
 			}
 
@@ -1375,14 +1417,21 @@ HRESULT APIENTRY MJPresent(IDXGISwapChain3* pSwapChain, UINT SyncInterval, UINT 
 
 			if (ImGui::Button( "ENEMIES DON'T ATTACK", ImVec2(ImGui::GetContentRegionAvail().x-1, NULL)))
 			{
-				isEnemiesDoNotAttack = !isEnemiesDoNotAttack;
+				// Safety check: Only proceed if CHR_DBG_FLAGSReal is valid
+				if (CHR_DBG_FLAGSReal != 0) {
+					isEnemiesDoNotAttack = !isEnemiesDoNotAttack;
 
-				static byte* enemiesDoNotAttack = (byte*)(CHR_DBG_FLAGSReal + (byte)0xd);
-				if (isEnemiesDoNotAttack) {
-					*enemiesDoNotAttack = 0x1;
+					static byte* enemiesDoNotAttack = (byte*)(CHR_DBG_FLAGSReal + (byte)0xd);
+					if (isEnemiesDoNotAttack) {
+						*enemiesDoNotAttack = 0x1;
+					}
+					else {
+						*enemiesDoNotAttack = 0x0;
+					}
 				}
 				else {
-					*enemiesDoNotAttack = 0x0;
+					// Reset the toggle state if the memory address is invalid
+					isEnemiesDoNotAttack = false;
 				}
 			}
 			ImGui::SameLine(); HelpMarker("Etities dont attack you");
@@ -1400,14 +1449,21 @@ HRESULT APIENTRY MJPresent(IDXGISwapChain3* pSwapChain, UINT SyncInterval, UINT 
 
 			if (ImGui::Button("FREEZE ENEMIES", ImVec2(ImGui::GetContentRegionAvail().x-1, NULL)))
 			{
-				isFreezeEnemies = !isFreezeEnemies;
+				// Safety check: Only proceed if CHR_DBG_FLAGSReal is valid
+				if (CHR_DBG_FLAGSReal != 0) {
+					isFreezeEnemies = !isFreezeEnemies;
 
-				static byte* freezeEnemies = (byte*)(CHR_DBG_FLAGSReal + (byte)0xe);
-				if (isFreezeEnemies) {
-					*freezeEnemies = 0x1;
+					static byte* freezeEnemies = (byte*)(CHR_DBG_FLAGSReal + (byte)0xe);
+					if (isFreezeEnemies) {
+						*freezeEnemies = 0x1;
+					}
+					else {
+						*freezeEnemies = 0x0;
+					}
 				}
 				else {
-					*freezeEnemies = 0x0;
+					// Reset the toggle state if the memory address is invalid
+					isFreezeEnemies = false;
 				}
 			}
 			ImGui::SameLine(); HelpMarker("Enemies don't move");
@@ -1425,14 +1481,21 @@ HRESULT APIENTRY MJPresent(IDXGISwapChain3* pSwapChain, UINT SyncInterval, UINT 
 
 			if (ImGui::Button("ALL GOD MODE", ImVec2(ImGui::GetContentRegionAvail().x-1, NULL)))
 			{
-				isAllGodMode = !isAllGodMode;
+				// Safety check: Only proceed if CHR_DBG_FLAGSReal is valid
+				if (CHR_DBG_FLAGSReal != 0) {
+					isAllGodMode = !isAllGodMode;
 
-				static byte* allGodMode = (byte*)(CHR_DBG_FLAGSReal+(byte)0xA);
-				if (isAllGodMode) {
-					*allGodMode = 0x1;
+					static byte* allGodMode = (byte*)(CHR_DBG_FLAGSReal+(byte)0xA);
+					if (isAllGodMode) {
+						*allGodMode = 0x1;
+					}
+					else {
+						*allGodMode = 0x0;
+					}
 				}
 				else {
-					*allGodMode = 0x0;
+					// Reset the toggle state if the memory address is invalid
+					isAllGodMode = false;
 				}
 			}
 			ImGui::SameLine(); HelpMarker("No one can die");
